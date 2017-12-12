@@ -33,6 +33,7 @@ Snake::Snake(int ladder_num_t) {
 		}
 	}
 	isFinish = false;
+	//memset(state_value, 10, 101);
 	memset(reward_table, -1, 101); 
 	reward_table[100] = 100;
 	getStateTable();
@@ -104,23 +105,25 @@ void Snake::policyEvaluation() {
 	int iteration_count = 0;
 	while(true) {
 		iteration_count++;
-		int new_state_value[101];
+		float new_state_value[101];
 		for (int i = 0; i < 101; i++) {
 			new_state_value[i] = state_value[i];
 		}
 		float tal_diff = 0;
 		float diff = 0;
 		for (int i = 0; i < 101; i++) {
-			vector<float> value_sas;
+			float value_sas = 0;
 			for (int h = 0; h < 101; h++) {
 				float value_sa = 0;
 				for (int j = 0; j < 2; j++) {
-					value_sa += lossrate* state_value[i] + state_table[j][i][h] * reward_table[h];
+					value_sa += state_table[j][i][h] * (lossrate* state_value[i] + reward_table[h]);
 				}
-				value_sas.push_back(value_sa);
+				value_sa = value_sa / 2;
+				value_sas += value_sa;
 			}
-			new_state_value[i] = value_sas[i];
-			diff = (new_state_value[i] - state_value[i])*(new_state_value[i] - state_value[i]);
+			new_state_value[i] = value_sas;
+			diff = new_state_value[i] - state_value[i];
+			diff = diff*diff;
 			tal_diff += diff;
 		}
 		tal_diff = sqrt(tal_diff);
