@@ -32,6 +32,8 @@ Snake::Snake(int ladder_num_t) {
 		}
 	}
 	isFinish = false;
+	reward_table[100] = 100;
+	getStateTable();
 }
 
 
@@ -63,4 +65,34 @@ int Snake::action(int act) {
 		}
 	}
 	return -1;
+}
+
+int Snake::ladder_move(int pos_t) {
+	for (int i = 0; i < ladder_num; i++) {
+		if (pos_t == ladders[i].first) {
+			pos_t = ladders[i].second;
+			//cout << ladders[i].first << " ladder to " << ladders[i].second << endl;
+			break;
+		}
+		else if (pos_t == ladders[i].second) {
+			pos_t = ladders[i].first;
+			//cout << ladders[i].second << " ladder to " << ladders[i].first << endl;
+			break;
+		}
+	}
+	return pos_t;
+}
+
+void Snake::getStateTable() {
+	for (int i = 0; i < 2; i++) {
+		float prob = 1.0 / dice_ranges[i];
+		for (int s = 0; s < 100; s++) {
+			for (int step = 0; step < dice_ranges[i]; step++) {
+				step += s;
+				step = ladder_move(step);
+				state_table[i][s][step] += prob;
+			}
+		}
+		state_table[i][100][100] = 1;
+	}
 }
