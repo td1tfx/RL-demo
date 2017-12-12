@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Snake.h"
 #include <time.h>
+#include <vector>
 
 
 Snake::Snake()
@@ -32,8 +33,10 @@ Snake::Snake(int ladder_num_t) {
 		}
 	}
 	isFinish = false;
+	memset(reward_table, -1, 101); 
 	reward_table[100] = 100;
 	getStateTable();
+	policyEvaluation();
 }
 
 
@@ -67,7 +70,7 @@ int Snake::action(int act) {
 	return -1;
 }
 
-int Snake::ladder_move(int pos_t) {
+int Snake::ladderMove(int pos_t) {
 	for (int i = 0; i < ladder_num; i++) {
 		if (pos_t == ladders[i].first) {
 			pos_t = ladders[i].second;
@@ -89,10 +92,47 @@ void Snake::getStateTable() {
 		for (int s = 0; s < 100; s++) {
 			for (int step = 0; step < dice_ranges[i]; step++) {
 				step += s;
-				step = ladder_move(step);
+				step = ladderMove(step);
 				state_table[i][s][step] += prob;
 			}
 		}
 		state_table[i][100][100] = 1;
 	}
+}
+
+void Snake::policyEvaluation() {
+	int iteration_count = 0;
+	while(true) {
+		iteration_count++;
+		int new_state_value[101];
+		for (int i = 0; i < 101; i++) {
+			new_state_value[i] = state_value[i];
+		}
+		float tal_diff = 0;
+		float diff = 0;
+		for (int i = 0; i < 101; i++) {
+			vector<float> value_sas;
+			for (int h = 0; h < 101; h++) {
+				float value_sa = 0;
+				for (int j = 0; j < 2; j++) {
+					value_sa += lossrate* state_value[i] + state_table[j][i][h] * reward_table[h];
+				}
+				value_sas.push_back(value_sa);
+			}
+			new_state_value[i] = value_sas[i];
+			diff = (new_state_value[i] - state_value[i])*(new_state_value[i] - state_value[i]);
+			tal_diff += diff;
+		}
+		tal_diff = sqrt(tal_diff);
+		if (tal_diff < 0.00001) {
+			cout << "iteration times:" << iteration_count << endl;
+			break;
+		}
+		else {
+			for (int i = 0; i < 101; i++) {
+				state_value[i] = new_state_value[i];
+			}
+		}
+	}
+	
 }
