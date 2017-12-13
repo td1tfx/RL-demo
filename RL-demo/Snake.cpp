@@ -34,9 +34,15 @@ Snake::Snake(int ladder_num_t) {
 	}
 	isFinish = false;
 	memset(reward_table, -1, 101*sizeof(int)); 
+// 	for (int h = 0; h < 101; h++) {
+// 		for (int j = 0; j < 2; j++) {
+// 			policy_table[j][h] = 0.5;
+// 		}
+// 	}
+	//memset(policy_table, 0.500, 202 * sizeof(float));
 	reward_table[100] = 100;
 	getStateTable();
-	policyEvaluation();
+	policyIteration();
 }
 
 
@@ -53,17 +59,17 @@ int Snake::action(int act) {
 	}
 	else if (pos > 100) {
 		pos = 200 - pos;
-		cout << "over 100!" << endl;
+		//cout << "over 100!" << endl;
 	}
 	for (int i = 0; i < ladder_num; i++) {
 		if (pos == ladders[i].first) {
 			pos = ladders[i].second;
-			cout << ladders[i].first << " ladder to " << ladders[i].second << endl;
+			//cout << ladders[i].first << " ladder to " << ladders[i].second << endl;
 			break;
 		}
 		else if (pos == ladders[i].second) {
 			pos = ladders[i].first;
-			cout << ladders[i].second << " ladder to " << ladders[i].first << endl;
+			//cout << ladders[i].second << " ladder to " << ladders[i].first << endl;
 			break;
 		}
 	}
@@ -74,12 +80,10 @@ int Snake::ladderMove(int pos_t) {
 	for (int i = 0; i < ladder_num; i++) {
 		if (pos_t == ladders[i].first) {
 			pos_t = ladders[i].second;
-			//cout << ladders[i].first << " ladder to " << ladders[i].second << endl;
 			break;
 		}
-		else if (pos_t == ladders[i].second) {
+		if (pos_t == ladders[i].second) {
 			pos_t = ladders[i].first;
-			//cout << ladders[i].second << " ladder to " << ladders[i].first << endl;
 			break;
 		}
 	}
@@ -114,10 +118,7 @@ void Snake::policyEvaluation() {
 			float value_sas = 0;
 			for (int h = 0; h < 101; h++) {
 				float value_sa = 0;
-				for (int j = 0; j < 2; j++) {
-					value_sa += state_table[j][i][h] * (lossrate* state_value[h] + reward_table[h]);
-				}
-				value_sa = value_sa / 2;
+				value_sa += state_table[policy_table[i]][i][h] * (lossrate* state_value[h] + reward_table[h]);
 				value_sas += value_sa;
 			}
 			new_state_value[i] = value_sas;
@@ -127,7 +128,7 @@ void Snake::policyEvaluation() {
 		}
 		tal_diff = sqrt(tal_diff);
 		if (tal_diff < 0.00001) {
-			cout << "iteration times:" << iteration_count << endl;
+			//cout << "iteration times:" << iteration_count << endl;
 			break;
 		}
 		else {
@@ -137,4 +138,42 @@ void Snake::policyEvaluation() {
 		}
 	}
 	
+}
+
+void Snake::policyImprovement() {
+	for (int i = 0; i < 101; i++) {
+		old_policy_table[i] = policy_table[i];
+	}
+	for (int i = 0; i < 101; i++) {
+		for (int j = 0; j < 2; j++) {
+			for (int h = 0; h < 101; h++) {
+				policy_value[i][j] += state_table[j][i][h] * (lossrate* state_value[h] + reward_table[h]);
+			}
+		}
+		if (policy_value[i][0] >= policy_value[i][1]) {
+			policy_table[i] = 0;
+		}
+		else {
+			policy_table[i] = 1;
+		}
+	}
+}
+
+void Snake::policyIteration() {
+	bool isContinue = true;
+	int iteration_count = 0;
+	while (isContinue) {
+		iteration_count++;
+		policyEvaluation();
+		policyImprovement();	
+		for (int i = 0; i < 101; i++) {
+			if (old_policy_table[i] != policy_table[i]) {
+			break;
+			}
+			if (i == 100) {
+				isContinue = false;
+				cout << "iteration times:" << iteration_count << endl;
+			}
+		}
+	}	
 }

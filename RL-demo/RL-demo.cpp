@@ -14,14 +14,42 @@ int main()
 		cout << snake->ladders[i].first << "->" << snake->ladders[i].second << ";";
 	}
 	cout << endl;
-	cout << "Begin!" << endl;
+	cout << "action0, Begin!" << endl;
 
 	int reward = 0;
 	int step_count = 0;
 	while (!snake->isFinish) {
-		int perReward= snake->action(1);
+		int perReward= snake->action(0);
 		reward += perReward;
-		cout << perReward << ";" << snake->pos << endl;
+		//cout << perReward << ";" << snake->pos << endl;
+		step_count++;
+	}
+	cout << "reward = " << reward << endl;
+	cout << "step count= " << step_count << endl;
+
+	cout << "action1, Begin!" << endl;
+
+	reward = 0;
+	step_count = 0;
+	snake->isFinish = false;
+	while (!snake->isFinish) {
+		int perReward = snake->action(1);
+		reward += perReward;
+		//cout << perReward << ";" << snake->pos << endl;
+		step_count++;
+	}
+	cout << "reward = " << reward << endl;
+	cout << "step count= " << step_count << endl;
+
+	cout << "RL action, Begin!" << endl;
+
+	reward = 0;
+	step_count = 0;
+	snake->isFinish = false;
+	while (!snake->isFinish) {
+		int perReward = snake->action(snake->policy_table[snake->pos]);
+		reward += perReward;
+		//cout << perReward << ";" << snake->pos << endl;
 		step_count++;
 	}
 	cout << "reward = " << reward << endl;

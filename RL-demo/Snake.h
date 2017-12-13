@@ -9,8 +9,11 @@ class Snake
 public:
 
 	float state_table[2][101][101] = {0};
-	float state_value[101] = {0};
+	float state_value[101] = { 0 };
+	float policy_value[101][2] = {0};
 	int reward_table[101];
+	int policy_table[101] = { 0 };
+	int old_policy_table[101] = { 0 };
 
 	pair<int, int>* ladders;
 	int act_num;
@@ -30,6 +33,8 @@ public:
 	int ladderMove(int pos_t);
 	void getStateTable();
 	void policyEvaluation();
+	void policyImprovement();
+	void policyIteration();
 
 };
 
