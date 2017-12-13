@@ -1,6 +1,8 @@
 #pragma once
 #include <utility>
 #include <iostream>
+//#include <queue>
+#include <stack>
 
 using namespace std;
 class Snake
@@ -8,9 +10,15 @@ class Snake
 
 public:
 
-	float state_table[2][101][101] = {0};
+
+	typedef int element[2];		//format:reward, state
+	stack <element> episode;
+	stack <element> e_value;
+
+	float state_table[2][101][101] = {0};	//auto add 0
 	float state_value[101] = { 0 };
 	float policy_value[101][2] = {0};
+	int value_count[101][2] = { 0 };
 	int reward_table[101];
 	int policy_table[101] = { 0 };
 	int old_policy_table[101] = { 0 };
@@ -20,6 +28,7 @@ public:
 	int ladder_num;
 	int* dice_ranges;
 	int pos;
+	int state;
 	bool isFinish;
 	const float lossrate = 0.8;
 	float value_state;
@@ -35,6 +44,8 @@ public:
 	void policyEvaluation();
 	void policyImprovement();
 	void policyIteration();
+	void mentecarloEvaluation();
+	void mentecarloOptimize();
 
 };
 

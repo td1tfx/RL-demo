@@ -55,6 +55,7 @@ int Snake::action(int act) {
 	pos += step;
 	if (pos == 100) {
 		isFinish = true;
+		pos = -1;
 		return 100;
 	}
 	else if (pos > 100) {
@@ -176,4 +177,52 @@ void Snake::policyIteration() {
 			}
 		}
 	}	
+}
+
+void Snake::mentecarloEvaluation() {
+	int prev_state;
+	prev_state = pos;
+	while(true) {
+		element element_t;
+		element_t[1] = pos;
+		element_t[0] = action(policy_table[pos]);
+		episode.push(element_t);
+		if (pos == -1) {
+			break;
+		}
+	}
+	int return_value;
+	while (!episode.empty())
+	{
+
+		return_value = return_value * lossrate + episode.top()[0];
+		element e_t = { return_value, episode.top()[1]};
+		e_value.push(e_t);
+		episode.pop();
+	}
+	while (!e_value.empty()) {
+		int act = policy_table[e_value.top()[1]];
+		value_count[e_value.top()[1]][act]++;
+		policy_value[e_value.top()[1]][act] = (e_value.top()[0] - policy_value[e_value.top()[1]][act]) / value_count[e_value.top()[1]][act];
+		e_value.pop();
+	}
+}
+
+void Snake::mentecarloOptimize() {
+	bool isContinue = true;
+	int iteration_count = 0;
+	while (isContinue) {
+		iteration_count++;
+		mentecarloEvaluation();
+		policyImprovement();
+		for (int i = 0; i < 101; i++) {
+			if (old_policy_table[i] != policy_table[i]) {
+				break;
+			}
+			if (i == 100) {
+				isContinue = false;
+				cout << "iteration times:" << iteration_count << endl;
+			}
+		}
+	}
 }
