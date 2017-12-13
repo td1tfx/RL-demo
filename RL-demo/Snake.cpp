@@ -33,8 +33,7 @@ Snake::Snake(int ladder_num_t) {
 		}
 	}
 	isFinish = false;
-	//memset(state_value, 10, 101);
-	memset(reward_table, -1, 101); 
+	memset(reward_table, -1, 101*sizeof(int)); 
 	reward_table[100] = 100;
 	getStateTable();
 	policyEvaluation();
@@ -91,10 +90,10 @@ void Snake::getStateTable() {
 	for (int i = 0; i < 2; i++) {
 		float prob = 1.0 / dice_ranges[i];
 		for (int s = 0; s < 100; s++) {
-			for (int step = 0; step < dice_ranges[i]; step++) {
-				step += s;
-				step = ladderMove(step);
-				state_table[i][s][step] += prob;
+			for (int step = 1; step < dice_ranges[i]+1; step++) {
+				int step1 = step + s;
+				step1 = ladderMove(step1);
+				state_table[i][s][step1] += prob;
 			}
 		}
 		state_table[i][100][100] = 1;
@@ -116,7 +115,7 @@ void Snake::policyEvaluation() {
 			for (int h = 0; h < 101; h++) {
 				float value_sa = 0;
 				for (int j = 0; j < 2; j++) {
-					value_sa += state_table[j][i][h] * (lossrate* state_value[i] + reward_table[h]);
+					value_sa += state_table[j][i][h] * (lossrate* state_value[h] + reward_table[h]);
 				}
 				value_sa = value_sa / 2;
 				value_sas += value_sa;
