@@ -31,7 +31,7 @@ int main()
 
 	reward = 0;
 	step_count = 0;
-	snake->isFinish = false;
+	snake->init();
 	while (!snake->isFinish) {
 		int perReward = snake->action(1);
 		reward += perReward;
@@ -45,7 +45,24 @@ int main()
 
 	reward = 0;
 	step_count = 0;
-	snake->isFinish = false;
+	snake->init();
+	snake->policyIteration();
+	while (!snake->isFinish) {
+		int perReward = snake->action(snake->policy_table[snake->pos]);
+		reward += perReward;
+		//cout << perReward << ";" << snake->pos << endl;
+		step_count++;
+	}
+	cout << "reward = " << reward << endl;
+	cout << "step count= " << step_count << endl;
+
+	
+	cout << "RL mentecarlo action, Begin!" << endl;
+
+	reward = 0;
+	step_count = 0;
+	snake->init();
+	snake->mentecarloOptimize();
 	while (!snake->isFinish) {
 		int perReward = snake->action(snake->policy_table[snake->pos]);
 		reward += perReward;

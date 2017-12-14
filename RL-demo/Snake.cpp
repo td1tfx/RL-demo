@@ -11,14 +11,10 @@ Snake::Snake()
 
 Snake::Snake(int ladder_num_t) {
 	srand((unsigned)time(NULL));
-	pos = 0;
-	act_num = 2;
-	dice_ranges = new int[act_num];
-	dice_ranges[0] = 3;
-	dice_ranges[1] = 6;
 	ladder_num = ladder_num_t;
+	dice_ranges = new int[act_num];
 	ladders = new pair<int, int>[ladder_num];
-	for (int i = 0; i < ladder_num;i++) {
+	for (int i = 0; i < ladder_num; i++) {
 		ladders[i].first = rand() % 100;
 		for (int j = 0; j < i; j++) {
 			while (ladders[i].first == ladders[j].first) {
@@ -32,17 +28,20 @@ Snake::Snake(int ladder_num_t) {
 			ladders[i].second = rand() % 100;
 		}
 	}
-	isFinish = false;
-	memset(reward_table, -1, 101*sizeof(int)); 
-// 	for (int h = 0; h < 101; h++) {
-// 		for (int j = 0; j < 2; j++) {
-// 			policy_table[j][h] = 0.5;
-// 		}
-// 	}
-	//memset(policy_table, 0.500, 202 * sizeof(float));
-	reward_table[100] = 100;
+	init();
 	getStateTable();
-	policyIteration();
+}
+
+void Snake::init() {
+	pos = 0;
+	act_num = 2;
+	dice_ranges[0] = 3;
+	dice_ranges[1] = 6;
+	isFinish = false;
+	memset(reward_table, -1, 101 * sizeof(int));
+	memset(policy_table, 0, 101 * sizeof(int));
+	reward_table[100] = 100;
+	//policyIteration();
 }
 
 
@@ -181,32 +180,34 @@ void Snake::policyIteration() {
 
 void Snake::mentecarloEvaluation() {
 	int prev_state;
+	pos = 0;
 	prev_state = pos;
 	while(true) {
 		element element_t;
-		element_t[1] = pos;
-		element_t[0] = action(policy_table[pos]);
+		element_t.state = pos;
+		element_t.reward = action(policy_table[pos]);
 		episode.push(element_t);
 		if (pos == -1) {
 			break;
 		}
 	}
-	int return_value;
+	int return_value = 0;
 	while (!episode.empty())
 	{
 
-		return_value = return_value * lossrate + episode.top()[0];
-		element e_t = { return_value, episode.top()[1]};
+		return_value = return_value * lossrate + episode.top().reward;
+		element e_t{ return_value, episode.top().state};
 		e_value.push(e_t);
 		episode.pop();
 	}
 	while (!e_value.empty()) {
-		int act = policy_table[e_value.top()[1]];
-		value_count[e_value.top()[1]][act]++;
-		policy_value[e_value.top()[1]][act] = (e_value.top()[0] - policy_value[e_value.top()[1]][act]) / value_count[e_value.top()[1]][act];
+		int act_t = policy_table[e_value.top().reward];
+		value_count[e_value.top().state][act_t]++;
+		policy_value[e_value.top().state][act_t] = (e_value.top().reward - policy_value[e_value.top().state][act_t]) / value_count[e_value.top().state][act_t];
 		e_value.pop();
 	}
 }
+
 
 void Snake::mentecarloOptimize() {
 	bool isContinue = true;
@@ -214,7 +215,7 @@ void Snake::mentecarloOptimize() {
 	while (isContinue) {
 		iteration_count++;
 		mentecarloEvaluation();
-		policyImprovement();
+		mentecarloPolicyImprovement();
 		for (int i = 0; i < 101; i++) {
 			if (old_policy_table[i] != policy_table[i]) {
 				break;
@@ -223,6 +224,20 @@ void Snake::mentecarloOptimize() {
 				isContinue = false;
 				cout << "iteration times:" << iteration_count << endl;
 			}
+		}
+	}
+}
+
+void Snake::mentecarloPolicyImprovement() {
+	for (int i = 0; i < 101; i++) {
+		old_policy_table[i] = policy_table[i];
+	}
+	for (int i = 0; i < 101; i++) {
+		if (policy_value[i][0] >= policy_value[i][1]) {
+			policy_table[i] = 0;
+		}
+		else {
+			policy_table[i] = 1;
 		}
 	}
 }

@@ -11,7 +11,12 @@ class Snake
 public:
 
 
-	typedef int element[2];		//format:reward, state
+	typedef struct element
+	{
+		int reward;
+		int state;
+
+	};
 	stack <element> episode;
 	stack <element> e_value;
 
@@ -20,7 +25,7 @@ public:
 	float policy_value[101][2] = {0};
 	int value_count[101][2] = { 0 };
 	int reward_table[101];
-	int policy_table[101] = { 0 };
+	int policy_table[101];
 	int old_policy_table[101] = { 0 };
 
 	pair<int, int>* ladders;
@@ -40,12 +45,14 @@ public:
 
 	int action(int act);
 	int ladderMove(int pos_t);
+	void init();
 	void getStateTable();
 	void policyEvaluation();
 	void policyImprovement();
 	void policyIteration();
 	void mentecarloEvaluation();
 	void mentecarloOptimize();
+	void mentecarloPolicyImprovement();
 
 };
 
