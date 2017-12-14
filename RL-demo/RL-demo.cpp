@@ -63,6 +63,8 @@ int main()
 	step_count = 0;
 	snake->init();
 	snake->mentecarloOptimize();
+	snake->isFinish = false;
+	snake->pos = 0;
 	while (!snake->isFinish) {
 		int perReward = snake->action(snake->policy_table[snake->pos]);
 		reward += perReward;
