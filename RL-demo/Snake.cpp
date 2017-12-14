@@ -203,7 +203,7 @@ void Snake::mentecarloEvaluation() {
 	while (!e_value.empty()) {
 		int act_t = policy_table[e_value.top().reward];
 		value_count[e_value.top().state][act_t]++;
-		policy_value[e_value.top().state][act_t] = (e_value.top().reward - policy_value[e_value.top().state][act_t]) / value_count[e_value.top().state][act_t];
+		policy_value[e_value.top().state][act_t] += (e_value.top().reward - policy_value[e_value.top().state][act_t]) / value_count[e_value.top().state][act_t];
 		e_value.pop();
 	}
 }
@@ -240,4 +240,56 @@ void Snake::mentecarloPolicyImprovement() {
 			policy_table[i] = 1;
 		}
 	}
+}
+
+void Snake::SARSAEvaluation() {
+	int prev_state;
+	pos = 0;
+	prev_state = pos;
+	int prev_act = -1;
+	int reward_t = 0;
+	int return_value = 0;
+	while (true)
+	{
+		int act_t = policy_table[pos];
+		reward_t = action(act_t);
+		if (prev_act != -1) {
+			int value_t;
+			if (pos == -1) {
+				value_t = 0;
+			}
+			else {
+				value_t = policy_value[pos][act_t];
+			}
+			return_value = reward_t + value_t;
+			value_count[pos][act_t]++;
+			policy_value[pos][act_t] += (return_value-policy_value[prev_state][prev_act])/value_count[prev_state][prev_act];
+		}
+		prev_act = act_t;
+		prev_state = pos;
+		if (pos == -1) {
+			break;
+		}
+	}
+
+}
+
+void Snake::SARSAIteration() {
+	bool isContinue = true;
+	int iteration_count = 0;
+	while (isContinue) {
+		iteration_count++;
+		SARSAEvaluation();
+		mentecarloPolicyImprovement();
+		for (int i = 0; i < 101; i++) {
+			if (old_policy_table[i] != policy_table[i]) {
+				break;
+			}
+			if (i == 100) {
+				isContinue = false;
+				cout << "iteration times:" << iteration_count << endl;
+			}
+		}
+	}
+
 }

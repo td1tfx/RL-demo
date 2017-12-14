@@ -74,6 +74,23 @@ int main()
 	cout << "reward = " << reward << endl;
 	cout << "step count= " << step_count << endl;
 
+	cout << "RL SARSA action, Begin!" << endl;
+
+	reward = 0;
+	step_count = 0;
+	snake->init();
+	snake->SARSAIteration();
+	snake->isFinish = false;
+	snake->pos = 0;
+	while (!snake->isFinish) {
+		int perReward = snake->action(snake->policy_table[snake->pos]);
+		reward += perReward;
+		//cout << perReward << ";" << snake->pos << endl;
+		step_count++;
+	}
+	cout << "reward = " << reward << endl;
+	cout << "step count= " << step_count << endl;
+
 	system("pause");
 
     return 0;

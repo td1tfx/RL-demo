@@ -53,6 +53,8 @@ public:
 	void mentecarloEvaluation();
 	void mentecarloOptimize();
 	void mentecarloPolicyImprovement();
+	void SARSAEvaluation();
+	void SARSAIteration();
 
 };
 
